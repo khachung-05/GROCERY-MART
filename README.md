@@ -160,5 +160,7 @@ grocery_app/
 ---
 
 ## 👨‍💻 Tác giả
+* **Đồ án môn học / Đồ án liên ngành**
 * **Sinh viên thực hiện:** Đồ án Tốt nghiệp / Báo cáo Chuyên ngành Công nghệ Thông tin
+* **Giáo viên hướng dẫn: TS. Nguyễn Lệ Thu**
 * **Đề tài:** Xây dựng ứng dụng thương mại điện tử mua sắm thực phẩm đa nền tảng
