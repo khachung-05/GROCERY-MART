@@ -109,7 +109,7 @@ flutter run -d chrome
 | Vai trò (Role) | Email | Mật khẩu | Chức năng truy cập |
 | :--- | :--- | :--- | :--- |
 | **Quản trị viên (Admin)** | `admin@gmail.com` | `adminpassword` | Toàn quyền Dashboard, Thống kê, Quản lý đơn hàng, Kho hàng |
-| **Khách hàng (Customer)** | `user@gmail.com` | `password123` | Mua sắm, Đặt hàng, Xem lịch sử đơn hàng cá nhân |
+| **Khách hàng (Customer)** | `zenitsu@gmail.com` | `123456` | Mua sắm, Đặt hàng, Xem lịch sử đơn hàng cá nhân |
 
 ---
 
