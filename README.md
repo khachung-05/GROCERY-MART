@@ -156,7 +156,8 @@ grocery_app/
 * **GetX:** Quản lý trạng thái (State Management), Dependency Injection và điều hướng (Route Management).
 * **http:** Giao thức truyền tải dữ liệu mạng tới REST API.
 * **intl:** Định dạng chuẩn tiền tệ Việt Nam Đồng (VNĐ) và thời gian thực tế.
-* **SharedPreferences & Sqflite:** Lưu trữ phiên đăng nhập và bộ nhớ đệm cục bộ.
+* **MySQL Database:** Cơ sở dữ liệu quan hệ (RDBMS) chính trên Backend Node.js, quản trị toàn bộ dữ liệu hệ thống.
+* **Sqflite (SQLite) & SharedPreferences:** Lưu trữ bộ nhớ đệm cục bộ (offline cache) và phiên đăng nhập trên thiết bị.
 * **CachedNetworkImage & Shimmer:** Tải hình ảnh mượt mà và hiệu ứng skeleton loading chuyên nghiệp.
 
 ---
