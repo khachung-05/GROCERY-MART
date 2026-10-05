@@ -1,194 +1,164 @@
-# Hệ thống Quản lý Vận hành Siêu thị Thực phẩm (Grocery Mart)
+# 🛒 GROCERY MART - ỨNG DỤNG MUA SẮM THỰC PHẨM & QUẢN LÝ ĐƠN HÀNG THÔNG MINH
 
-Hệ thống hỗ trợ vận hành một siêu thị và chuỗi bán lẻ thực phẩm từ danh mục hàng hóa, kiểm kê tồn kho, xử lý đơn bán tại chỗ đến tiếp nhận và điều phối đơn mua sắm trực tuyến. Mục tiêu của hệ thống là đưa các hoạt động kinh doanh hằng ngày về một **luồng dữ liệu tập trung (Single Source of Truth)**, giúp người quản lý theo dõi sát sao vòng đời hàng hóa, trạng thái đơn hàng, doanh thu thực tế và hiệu suất vận hành theo thời gian thực.
-
-> **Lưu ý:** Tài liệu README này phản ánh phạm vi nghiệp vụ và chức năng hiện hữu trong mã nguồn của hệ thống. Đây là tài liệu tổng quan phục vụ kỹ thuật và quy trình vận hành, không thay thế hệ thống kế toán tài chính chuyên sâu, chuẩn mực hóa đơn điện tử hoặc quy chế nội bộ của một doanh nghiệp cụ thể.
-
----
-
-## 1. Bài toán nghiệp vụ
-
-Trong mô hình kinh doanh siêu thị và thực phẩm tươi sống, các khó khăn phổ biến bao gồm:
-* Hàng hóa, giá niêm yết và số lượng tồn kho bị phân mảnh giữa quầy bán lẻ và kênh online.
-* Đơn hàng trực tuyến phát sinh cần được điều phối nhanh chóng (xác nhận, đóng gói, giao hàng) để đảm bảo độ tươi của thực phẩm.
-* Khó kiểm soát chênh lệch doanh thu giữa các kênh thanh toán (tiền mặt COD, chuyển khoản, thẻ).
-* Thiếu số liệu tổng hợp trực quan để đánh giá mặt hàng bán chạy, xu hướng tiêu dùng và hiệu quả vận hành hằng ngày.
-
-**Hệ thống tập trung giải quyết các nhu cầu cốt lõi:**
-1. Duy trì **một danh mục sản phẩm duy nhất** (tên, giá bán, hình ảnh, đơn vị tính, số lượng tồn kho) dùng chung cho toàn bộ hoạt động bán hàng và quản trị.
-2. Quản lý **trọn vẹn vòng đời đơn hàng**, đặc biệt là đơn trực tuyến từ lúc khách đặt, xác nhận đóng gói, vận chuyển đến khi hoàn tất hoặc hủy.
-3. Cung cấp nền tảng **tự phục vụ (Self-service) cho khách hàng**: Tìm kiếm, giỏ hàng, áp mã giảm giá, đặt hàng, theo dõi lộ trình đơn và tương tác với Trợ lý AI.
-4. Cung cấp **Bảng điều hành quản trị (Admin Console)**: Theo dõi doanh thu theo thời gian thực, biểu đồ xu hướng 7 ngày, quản lý danh mục và điều phối đơn hàng.
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white" />
+  <img src="https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white" />
+  <img src="https://img.shields.io/badge/GetX-State_Management-8A2BE2?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/MySQL-Database-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+</p>
 
 ---
 
-## 2. Phạm vi chức năng hiện tại
+## 📖 Giới thiệu Đề tài
 
-| Phân hệ | Nghiệp vụ được hỗ trợ |
-| :--- | :--- |
-| **Danh mục hàng hóa** | Quản lý danh mục (Trái cây, Rau củ, Thịt trứng, Hải sản...), thêm/sửa/xóa sản phẩm, cập nhật giá bán, hình ảnh, đơn vị tính (`kg`, `hộp`, `gói`) và số lượng tồn. |
-| **Bán hàng trực tuyến** | Giỏ hàng thời gian thực, kiểm tra số lượng, áp dụng voucher khuyến mãi, checkout địa chỉ nhận hàng, chọn phương thức thanh toán (COD / Chuyển khoản). |
-| **Xử lý đơn hàng** | Tiếp nhận đơn mới, theo dõi trạng thái đơn hàng: *Chờ xác nhận*, *Chuẩn bị*, *Đang giao*, *Đã giao*, *Đã hủy*; xem chi tiết danh sách món hàng trong đơn. |
-| **Tài khoản & Phân quyền** | Đăng ký tài khoản, đăng nhập phân quyền theo vai trò (`customer` vs `admin`), lưu phiên làm việc an toàn (`LocalStorage`), cập nhật thông tin cá nhân. |
-| **Báo cáo & Điều hành** | Dashboard thống kê doanh thu (Hôm nay, Tuần này, Tháng này, Toàn thời gian), số lượng đơn phát sinh, giá trị đơn trung bình (AOV), tổng sản lượng bán ra, biểu đồ xu hướng 7 ngày tính từ dữ liệu thật. |
-| **Trợ lý AI & Thông báo** | Chatbot AI thông minh tư vấn thực đơn, gợi ý sản phẩm phù hợp; hệ thống thông báo trạng thái đơn hàng và chương trình ưu đãi. |
+**Grocery Mart** là giải pháp phần mềm thương mại điện tử hoàn chỉnh phục vụ nhu cầu mua sắm thực phẩm sạch trực tuyến kết hợp bảng điều khiển quản trị (Admin Dashboard) thời gian thực. Dự án được thiết kế và xây dựng theo mô hình **Client - Server (Fullstack)** với kiến trúc phân tầng chuyên nghiệp:
+
+* **Frontend:** Ứng dụng đa nền tảng viết bằng **Flutter & GetX**, hỗ trợ mượt mà trên Mobile (Android/iOS) và Web/Desktop.
+* **Backend:** RESTful API xây dựng trên **Node.js (Express framework)**.
+* **Database:** Hệ quản trị cơ sở dữ liệu quan hệ **MySQL** lưu trữ dữ liệu thực tế.
 
 ---
 
-## 3. Vai trò và trách nhiệm
+## ✨ Tính năng Nổi bật
 
-Hệ thống phân định quyền hạn theo tài khoản được xác thực từ cơ sở dữ liệu backend, đảm bảo tính an toàn dữ liệu:
+### 1. Phân hệ Khách hàng (Customer App)
+* 🔐 **Xác thực tài khoản:** Đăng ký, đăng nhập bảo mật với phiên lưu trữ qua SharedPreferences / JWT.
+* 🥬 **Danh mục & Sản phẩm:** Xem danh sách thực phẩm tươi sống, flash sale, sản phẩm nổi bật, tìm kiếm tức thì theo từ khóa.
+* 🔍 **Bộ lọc & Chi tiết:** Lọc theo phân loại, xem đánh giá sao, bảng dinh dưỡng, hướng dẫn bảo quản.
+* 🛒 **Giỏ hàng thông minh:** Thêm/bớt số lượng, chọn xóa sản phẩm, tính toán tự động phụ phí và tạm tính.
+* 💳 **Thanh toán & Đặt hàng (Checkout):** Chọn địa chỉ giao hàng, áp dụng Voucher giảm giá, hỗ trợ phương thức COD / Chuyển khoản, thêm ghi chú cho đơn hàng.
+* 📦 **Lịch sử đơn hàng:** Theo dõi trạng thái đơn hàng theo thời gian thực (*Chờ xác nhận*, *Chuẩn bị*, *Đang giao*, *Đã giao*, *Đã hủy*).
+* 🤖 **Trợ lý AI:** Chatbot tư vấn thực đơn và gợi ý sản phẩm tự động.
+* 🔔 **Hệ thống thông báo:** Cập nhật biến động trạng thái đơn hàng và các chương trình khuyến mãi.
 
-| Vai trò (Role) | Trách nhiệm vận hành chính |
-| :--- | :--- |
-| **Quản trị viên (`admin`)** | Quản lý toàn bộ danh mục và sản phẩm; xem thống kê doanh thu và báo cáo điều hành; tiếp nhận và đổi trạng thái xử lý đơn hàng; quản lý danh sách khách hàng và chính sách khuyến mãi. |
-| **Khách hàng (`customer`)** | Đăng ký/đăng nhập tài khoản; tìm kiếm và xem chi tiết sản phẩm; quản lý giỏ hàng; áp dụng voucher; đặt hàng; theo dõi trạng thái đơn hàng của tôi; tương tác cùng Trợ lý AI. |
-| **Khách vãng lai (`guest`)** | Xem danh mục sản phẩm, tìm kiếm món ăn; trải nghiệm giỏ hàng và được điều hướng đăng nhập khi thực hiện thanh toán/theo dõi đơn. |
-
----
-
-## 4. Các đối tượng nghiệp vụ cốt lõi
-
-| Đối tượng | Ý nghĩa trong vận hành | Bảng cơ sở dữ liệu |
-| :--- | :--- | :--- |
-| **Tài khoản người dùng** | Đại diện cho khách hàng hoặc nhà quản trị, chứa định danh, email, số điện thoại, mật khẩu và vai trò (`role`). | `users` |
-| **Danh mục hàng hóa** | Nhóm phân loại thực phẩm để khách hàng dễ dàng tìm kiếm và quản lý kho phân chia khu vực. | `categories` |
-| **Sản phẩm** | Thông tin mặt hàng đang kinh doanh: tên, giá niêm yết, đơn vị tính, mô tả, ảnh minh họa và tồn kho. | `products` |
-| **Đơn hàng (Order)** | Cam kết giao dịch mua sắm giữa khách hàng và siêu thị, bao gồm người nhận, địa chỉ, tổng tiền, phí ship, trạng thái và ngày đặt. | `orders` |
-| **Dòng đơn hàng (Order Items)** | Danh sách chi tiết các sản phẩm, số lượng, đơn giá tại thời điểm đặt thuộc về một mã đơn hàng. | `order_items` |
-| **Thông báo** | Bản ghi thông tin cập nhật biến động trạng thái đơn hàng hoặc tin tức khuyến mãi gửi tới người dùng. | `notifications` |
+### 2. Phân hệ Quản trị viên (Admin Dashboard)
+* 📊 **Thống kê doanh thu thời gian thực:** Doanh thu thuần, số lượng đơn phát sinh, AOV (giá trị đơn trung bình), tổng sản phẩm bán ra.
+* 📈 **Biểu đồ xu hướng 7 ngày:** Biểu đồ cột tự động tính toán từ các đơn hàng thực tế phát sinh trong tuần.
+* 📑 **Quản lý đơn hàng:** Xem danh sách đơn, chi tiết từng món hàng, cập nhật trạng thái đơn (Xác nhận, Đóng gói, Giao hàng, Hoàn tất).
+* 🏷️ **Quản lý danh mục & Sản phẩm:** Thêm món mới, cập nhật giá tiền, hình ảnh và tồn kho.
+* 👥 **Quản lý khách hàng & Khuyến mãi:** Danh sách người dùng hệ thống và thiết lập mã Voucher ưu đãi.
 
 ---
 
-## 5. Luồng vận hành chính
+## 🏛️ Kiến trúc Hệ thống (System Architecture)
 
 ```
-[ Khách hàng ]                 [ Node.js API ]               [ Quản trị viên ]
-      │                                │                               │
-      ├──── 1. Xem & Đặt hàng ────────>│                               │
-      │    (POST /api/orders)          ├──── 2. Lưu vào MySQL ─────────┤
-      │                                │    (Status: 'Chờ xác nhận')   │
-      │                                │                               │
-      │                                │<─── 3. Xem đơn mới & duyệt ───┤
-      │                                │    (PUT /api/orders/:id)      │
-      │                                │                               │
-      │<─── 4. Cập nhật lộ trình ──────┤                               │
-      │    ('Đang giao' -> 'Đã giao')  │                               │
+[ Flutter Client (Web / Mobile) ]
+           │
+           │  HTTP RESTful API (JSON)
+           ▼
+[ Node.js + Express Server (Port: 3000) ]
+           │
+           │  MySQL Connection Pool
+           ▼
+[ MySQL Database: grocery_db (XAMPP / MariaDB) ]
 ```
 
-### 5.1. Chuẩn bị hàng hóa & Danh mục
-1. Quản trị viên đăng nhập vào hệ thống với tài khoản quyền `admin`.
-2. Truy cập màn hình **Sản Phẩm & Kho Hàng**, thiết lập danh mục và bổ sung sản phẩm mới (tên sản phẩm, đơn giá, đơn vị tính, hình ảnh).
-3. Thông tin sản phẩm được đồng bộ vào database và sẵn sàng hiển thị trên giao diện của khách hàng.
+---
 
-### 5.2. Mua sắm & Đặt hàng trực tuyến
-1. Khách hàng lựa chọn sản phẩm, tùy chỉnh số lượng trong giỏ hàng.
-2. Tại màn hình **Thanh toán (Checkout)**, khách hàng điền tên người nhận, số điện thoại, địa chỉ giao nhận, chọn phương thức thanh toán và nhập ghi chú.
-3. Khi bấm **Xác nhận đặt hàng**, ứng dụng gửi yêu cầu `POST /api/orders` lên Backend.
-4. Hệ thống tạo mã đơn hàng duy nhất (`ORD_...`), lưu bản ghi vào bảng `orders` và chi tiết từng món vào `order_items` ở trạng thái ban đầu là **`Chờ xác nhận`**.
-5. Giỏ hàng cục bộ được làm sạch, khách hàng chuyển đến màn hình xác nhận đơn hàng thành công.
+## 🗄️ Cấu trúc Cơ sở Dữ liệu (MySQL Schema)
 
-### 5.3. Xử lý & Điều phối đơn hàng (Phía Quản trị)
-1. Đơn hàng mới lập tức xuất hiện trên **Báo cáo & Thống kê** và danh sách **Đơn Hàng & Vận Chuyển** của Admin.
-2. Quản trị viên bấm xem chi tiết đơn hàng, kiểm tra địa chỉ và danh sách món cần chuẩn bị.
-3. Quản trị viên thực hiện cập nhật trạng thái đơn hàng theo quy trình:
-   * **Chờ xác nhận** $\rightarrow$ **Chuẩn bị / Đang đóng gói** $\rightarrow$ **Đang giao** $\rightarrow$ **Đã giao (Hoàn tất)**.
-4. Mọi thay đổi trạng thái đều được cập nhật tức thời để khách hàng theo dõi trong mục **Đơn hàng của tôi**.
+Cơ sở dữ liệu **`grocery_db`** gồm các bảng quan hệ chính:
+
+1. **`users`**: Quản lý tài khoản, mật khẩu, họ tên, email, số điện thoại, vai trò (`role`: `customer` / `admin`).
+2. **`categories`**: Danh mục thực phẩm (Trái cây, Rau củ, Thịt trứng, Hải sản...).
+3. **`products`**: Thông tin sản phẩm, đơn giá, hình ảnh, đơn vị tính, số lượng tồn kho.
+4. **`orders`**: Thông tin đơn đặt hàng, tổng tiền, phí vận chuyển, địa chỉ nhận hàng, phương thức thanh toán, trạng thái đơn, thời gian tạo.
+5. **`order_items`**: Chi tiết từng mặt hàng và số lượng nằm trong đơn hàng.
+6. **`notifications`**: Thông báo gửi đến người dùng hệ thống.
 
 ---
 
-## 6. Nguyên tắc vận hành dữ liệu
+## 🚀 Hướng dẫn Cài đặt & Khởi chạy
 
-* **Một nguồn dữ liệu thống nhất (Single Source of Truth):** Toàn bộ người dùng, sản phẩm, đơn hàng được quản lý tập trung trên cơ sở dữ liệu MySQL (`grocery_db`).
-* **Tính toàn vẹn của đơn hàng:** Khi đơn hàng đã đặt, thông tin giá và tên sản phẩm trong `order_items` được lưu cố định tại thời điểm mua, không bị biến động nếu giá sản phẩm trong danh mục thay đổi sau này.
-* **Định dạng thời gian chuẩn xác:** Dữ liệu thời gian được xử lý theo múi giờ địa phương Việt Nam (**UTC+7** / `Asia/Ho_Chi_Minh`), đảm bảo thống kê báo cáo và lịch sử đặt hàng chuẩn xác từng phút.
-* **Phân định trạng thái rõ ràng:** Đơn hàng tuân thủ quy trình trạng thái nghiêm ngặt (`Chờ xác nhận`, `Chuẩn bị`, `Đang giao`, `Đã giao`, `Đã hủy`).
-* **Bảo mật biến môi trường:** Các thông tin nhạy cảm về cơ sở dữ liệu, cổng kết nối và khóa bí mật được lưu tách biệt, không lưu trực tiếp vào mã nguồn công khai.
+### 1. Chuẩn bị môi trường
+* Đã cài đặt [Flutter SDK](https://docs.flutter.dev/get-started/install) (>= 3.0.0).
+* Đã cài đặt [Node.js](https://nodejs.org/) (>= 16.x).
+* Đã cài đặt [XAMPP](https://www.apachefriends.org/) (Khởi động Apache & MySQL).
 
----
+### 2. Khởi tạo Cơ sở Dữ liệu (MySQL)
+1. Mở **phpMyAdmin** tại `http://localhost/phpmyadmin`.
+2. Tạo cơ sở dữ liệu mới với tên: `grocery_db`.
+3. Import file cấu trúc SQL của dự án vào database `grocery_db`.
 
-## 7. Báo cáo hỗ trợ điều hành
-
-Bảng điều khiển **Admin Dashboard** cung cấp góc nhìn toàn diện phục vụ quản lý:
-* **Doanh thu theo chu kỳ:** Tự động lọc và tổng hợp doanh thu theo Hôm nay, Tuần này, Tháng này và Toàn thời gian.
-* **Chỉ số kinh doanh cốt lõi (KPIs):**
-  * **Tổng doanh thu thuần:** Doanh thu thực tế sau khi trừ các đơn hủy.
-  * **Số lượng đơn phát sinh:** Tổng số đơn đặt trong chu kỳ được chọn.
-  * **AOV (Average Order Value):** Giá trị trung bình trên mỗi đơn hàng.
-  * **Sản phẩm bán ra:** Tổng sản lượng các món hàng đã tiêu thụ.
-* **Biểu đồ xu hướng 7 ngày gần nhất:** Biểu đồ cột trực quan, tính toán tự động từ cơ sở dữ liệu đơn hàng theo từng ngày trong tuần (Thứ 2 $\rightarrow$ Chủ Nhật).
-
----
-
-## 8. Giới hạn hiện tại và lưu ý trước khi triển khai
-
-* **Mã hóa mật khẩu:** Mật khẩu trong phiên bản hiện tại đang được lưu trữ trực tiếp; khi đưa vào môi trường sản xuất (Production), cần tích hợp thư viện băm mật khẩu như `bcryptjs`.
-* **Cổng thanh toán trực tuyến:** Hệ thống hiện hỗ trợ phương thức COD (tiền mặt khi nhận) và xác nhận đơn chuyển khoản. Việc tích hợp các cổng thanh toán tự động (VNPay, MoMo, ZaloPay) cần đăng ký tài khoản doanh nghiệp và cấu hình khóa bí mật tương ứng.
-* **Cấu hình IP thiết bị di động:** Khi chạy ứng dụng trên điện thoại thật hoặc máy ảo Android, cần đổi địa chỉ `localhost:3000` thành IP mạng LAN của máy chạy backend (hoặc `10.0.2.2:3000` đối với Android Emulator).
-
----
-
-## 9. Kiến trúc kỹ thuật
-
-```
-Flutter Client (Web / Android / iOS / Desktop)
-        │
-        │ HTTP RESTful API (JSON)
-        ▼
-Node.js + Express API Server (Port: 3000)
-        │
-        │ MySQL Connection Pool (mysql2)
-        ▼
-MySQL Database: grocery_db (XAMPP / MariaDB)
-```
-
-* **Frontend:** Flutter SDK (Dart ^3.x), GetX State Management, SharedPreferences, http, intl.
-* **Backend:** Node.js, Express.js, CORS, mysql2.
-* **Database:** MySQL 8.x / MariaDB (XAMPP).
-
----
-
-## 10. Cài đặt môi trường phát triển
-
-### 10.1. Yêu cầu tiên quyết
-* [Flutter SDK](https://docs.flutter.dev/get-started/install) (phiên bản tương thích Dart >= 3.0.0).
-* [Node.js](https://nodejs.org/) (phiên bản >= 16.x) & npm.
-* [XAMPP](https://www.apachefriends.org/) (Khởi chạy Apache & MySQL).
-
-### 10.2. Chuẩn bị Cơ sở dữ liệu (MySQL)
-1. Mở **XAMPP Control Panel** và bấm **Start** dịch vụ MySQL.
-2. Truy cập công cụ phpMyAdmin tại `http://localhost/phpmyadmin`.
-3. Tạo mới database có tên: **`grocery_db`** (Collation: `utf8mb4_unicode_ci`).
-4. Khởi tạo các bảng `users`, `categories`, `products`, `orders`, `order_items`, `notifications`.
-
-### 10.3. Cài đặt và chạy Backend (Node.js)
-Mở cửa sổ dòng lệnh tại thư mục backend của dự án:
+### 3. Chạy Backend Server
+Mở terminal và di chuyển vào thư mục backend:
 ```bash
 cd D:/grocery_server
 npm install
 node index.js
 ```
-> Khi màn hình xuất hiện:
-> ```text
-> Server dang chay tai http://localhost:3000
-> Đã kết nối thành công database grocery_db
-> ```
-> Backend đã sẵn sàng phục vụ các yêu cầu API.
+> Server sẽ lắng nghe tại: `http://localhost:3000`
 
-### 10.4. Cài đặt và chạy Ứng dụng Flutter
-Mở một cửa sổ dòng lệnh mới tại thư mục ứng dụng:
+### 4. Chạy Ứng dụng Flutter
+Mở một terminal mới tại thư mục đồ án:
 ```bash
 cd D:/grocery_app
 flutter pub get
 flutter run -d chrome
 ```
-*(Hoặc chọn thiết bị đích là Android Emulator / Windows Desktop tùy nhu cầu)*.
+*(Hoặc chạy trên thiết bị giả lập Android / Windows Desktop)*.
 
 ---
 
-## 11. Hướng phát triển tiếp theo
+## 🔑 Tài khoản Mẫu Trải nghiệm
 
-1. **Bảo mật nâng cao:** Triển khai băm mật khẩu với `bcrypt` và xác thực qua chuẩn `JWT Token`.
-2. **Cổng thanh toán tự động:** Tích hợp SDK thanh toán VNPay và quét mã VietQR tự động khớp nội dung chuyển khoản.
-3. **Mô-đun Quản lý Kho chuyên sâu:** Bổ sung phiếu nhập kho từ nhà cung cấp, lịch sử điều chỉnh số lượng và cảnh báo khi tồn kho chạm ngưỡng tối thiểu.
-4. **Thông báo đẩy (Push Notifications):** Tích hợp Firebase Cloud Messaging (FCM) để gửi thông báo biến động đơn hàng trực tiếp lên thanh trạng thái điện thoại của khách hàng.
+| Vai trò (Role) | Email | Mật khẩu | Chức năng truy cập |
+| :--- | :--- | :--- | :--- |
+| **Quản trị viên (Admin)** | `admin@gmail.com` | `adminpassword` | Toàn quyền Dashboard, Thống kê, Quản lý đơn hàng, Kho hàng |
+| **Khách hàng (Customer)** | `user@gmail.com` | `password123` | Mua sắm, Đặt hàng, Xem lịch sử đơn hàng cá nhân |
+
+---
+
+## 📁 Cấu trúc Thư mục Mã nguồn (Project Structure)
+
+```
+grocery_app/
+├── android/                   # Cấu hình nền tảng Android
+├── ios/                       # Cấu hình nền tảng iOS
+├── web/                       # Cấu hình nền tảng Web
+├── assets/                    # Hình ảnh, biểu tượng tĩnh
+└── lib/
+    ├── app.dart               # Cấu hình GetMaterialApp & Theme
+    ├── main.dart              # Điểm khởi chạy ứng dụng
+    ├── core/                  # Thành phần dùng chung toàn app
+    │   ├── constants/         # Bảng màu, chuỗi văn bản, routes
+    │   ├── routes/            # Khai báo GetPages & định tuyến
+    │   ├── storage/           # LocalStorage (SharedPreferences)
+    │   ├── themes/            # Typography, Style giao diện
+    │   └── utils/             # Formatters (tiền tệ VNĐ, ngày giờ)
+    ├── data/                  # Tầng dữ liệu (Data Layer)
+    │   ├── datasource/        # DatabaseHelper, Mock Data fallback
+    │   ├── models/            # ProductModel, OrderModel, UserModel...
+    │   └── repositories/      # Gọi API Backend (Auth, Order, Product...)
+    ├── features/              # Các phân hệ chức năng (Feature-First)
+    │   ├── admin/             # Bảng điều khiển quản trị, biểu đồ thống kê
+    │   ├── ai_assistant/      # Trợ lý ảo AI tư vấn
+    │   ├── auth/              # Đăng ký, đăng nhập, quên mật khẩu
+    │   ├── cart/              # Giỏ hàng mua sắm
+    │   ├── checkout/          # Quy trình đặt hàng & thanh toán
+    │   ├── home/              # Trang chủ hiển thị sản phẩm
+    │   ├── notification/      # Quản lý thông báo
+    │   ├── order/             # Theo dõi lịch sử đơn hàng
+    │   ├── product/           # Chi tiết sản phẩm, đánh giá
+    │   └── profile/           # Hồ sơ cá nhân & cài đặt
+    └── shared/                # Widget tái sử dụng (Buttons, Cards, Dialogs)
+```
+
+---
+
+## 🛠️ Công nghệ & Thư viện Sử dụng
+
+* **Flutter & Dart:** Ngôn ngữ và framework UI chính.
+* **GetX:** Quản lý trạng thái (State Management), Dependency Injection và điều hướng (Route Management).
+* **http:** Giao thức truyền tải dữ liệu mạng tới REST API.
+* **intl:** Định dạng chuẩn tiền tệ Việt Nam Đồng (VNĐ) và thời gian thực tế.
+* **SharedPreferences & Sqflite:** Lưu trữ phiên đăng nhập và bộ nhớ đệm cục bộ.
+* **CachedNetworkImage & Shimmer:** Tải hình ảnh mượt mà và hiệu ứng skeleton loading chuyên nghiệp.
+
+---
+
+## 👨‍💻 Tác giả
+* **Sinh viên thực hiện:** Đồ án Tốt nghiệp / Báo cáo Chuyên ngành Công nghệ Thông tin
+* **Đề tài:** Xây dựng ứng dụng thương mại điện tử mua sắm thực phẩm đa nền tảng
