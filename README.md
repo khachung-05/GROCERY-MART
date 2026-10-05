@@ -29,7 +29,9 @@
 * 🛒 **Giỏ hàng thông minh:** Thêm/bớt số lượng, chọn xóa sản phẩm, tính toán tự động phụ phí và tạm tính.
 * 💳 **Thanh toán & Đặt hàng (Checkout):** Chọn địa chỉ giao hàng, áp dụng Voucher giảm giá, hỗ trợ phương thức COD / Chuyển khoản, thêm ghi chú cho đơn hàng.
 * 📦 **Lịch sử đơn hàng:** Theo dõi trạng thái đơn hàng theo thời gian thực (*Chờ xác nhận*, *Chuẩn bị*, *Đang giao*, *Đã giao*, *Đã hủy*).
-* 🤖 **Trợ lý AI:** Chatbot tư vấn thực đơn và gợi ý sản phẩm tự động.
+* 🤖 **Trợ lý AI Đi Chợ (Tích hợp Google Gemini API):**
+  * Tư vấn thực đơn hàng ngày, gợi ý món ăn theo nhu cầu dinh dưỡng (món chay, giàu protein, thanh nhiệt...).
+  * Tự động phân tích nguyên liệu cần dùng và trích xuất danh sách sản phẩm tương ứng sẵn có tại cửa hàng kèm hình ảnh trực quan để thêm nhanh vào giỏ hàng.
 * 🔔 **Hệ thống thông báo:** Cập nhật biến động trạng thái đơn hàng và các chương trình khuyến mãi.
 
 ### 2. Phân hệ Quản trị viên (Admin Dashboard)
