@@ -131,7 +131,7 @@ grocery_app/
     │   ├── themes/            # Typography, Style giao diện
     │   └── utils/             # Formatters (tiền tệ VNĐ, ngày giờ)
     ├── data/                  # Tầng dữ liệu (Data Layer)
-    │   ├── datasource/        # DatabaseHelper, Mock Data fallback
+    │   ├── datasource/        # DatabaseHelper
     │   ├── models/            # ProductModel, OrderModel, UserModel...
     │   └── repositories/      # Gọi API Backend (Auth, Order, Product...)
     ├── features/              # Các phân hệ chức năng (Feature-First)
